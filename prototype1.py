@@ -2,15 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-ZetCode Tkinter tutorial
-
-This program creates a Quit
-button. When we press the button,
-the application terminates.
-
-Author: Jan Bodnar
-Last modified: July 2017
-Website: www.zetcode.com
+First prototpye of TADse's application.
 """
 
 from tkinter import Tk, BOTH, Label, TOP, YES
@@ -18,11 +10,45 @@ from tkinter.ttk import Frame, Button, Style
 from PIL import Image, ImageTk
 from tkinter.filedialog import askopenfilename
 
-def importInfo():
-    filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-    print(filename)
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
-class Example(Frame):
+WIDTH = 1500
+HEIGHT = 1500
+LARGE_FONT = ("Verdana", 12)
+
+
+def importInfo(basetk):
+    filename = askopenfilename(initialdir = dir_path,title = "Select file") # show an "Open" dialog box and return the path to the selected file
+    print(filename)
+    basetk.show_frame(BasicDataF)
+
+class BaseTK(Tk):
+
+    def __init__(self, *args, **kwargs):
+        Tk.__init__(self, *args, **kwargs)
+        container = Frame(self)
+
+        container.pack(sid="top", fill="both", expand = True)
+
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+
+        frame = StartPage(container, self)
+
+        self.frames[StartPage] = frame
+
+        frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame(StartPage)
+
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
+
+class DataRequestF(Frame):
 
     def __init__(self):
         super().__init__()
@@ -39,17 +65,19 @@ class Example(Frame):
         self.pack(fill=BOTH, expand=1)
 
         quitButton = Button(self, text="Quit", command=self.quit)
-
         importButton = Button(self, text="Import Data", command=importInfo)
 
-
         imageFile = "test.jpg"
-        self.image1 = ImageTk.PhotoImage(Image.open(imageFile))
+        tempImage = Image.open(imageFile)
 
         # get the image size
-        w = self.image1.width()*2
-        h = self.image1.height()*2
+        w = tempImage.width
+        h = tempImage.height
         print("w: %d \n h: %d \n" % (w, h))
+
+        tempImage = tempImage.resize((int (w/2), int (h/2) ), Image.ANTIALIAS)
+
+        self.image1 = ImageTk.PhotoImage(tempImage)
 
         # position coordinates of root 'upper left corner'
         x1 = 0
@@ -58,7 +86,7 @@ class Example(Frame):
         y = 0
 
         # make the root window the size of the image
-        self.master.geometry("%dx%d+%d+%d" % (w, h, x, y))
+        self.master.geometry("%dx%d+%d+%d" % (WIDTH, HEIGHT, x, y))
 
         quitButton.place(x=(w/2), y=(h*3/4))
 
@@ -73,7 +101,7 @@ class Example(Frame):
         print ("Display image1")
 
 
-class OpeningPrompt(Frame):
+class BasicDataF(Frame):
 
     def __init__(self):
         super().__init__()
@@ -83,7 +111,7 @@ class OpeningPrompt(Frame):
     def initUI(self):
         pass
 
-class BasicData(Frame):
+class PaceDataF(Frame):
 
     def __init__(self):
         super().__init__()
@@ -93,17 +121,32 @@ class BasicData(Frame):
     def initUI(self):
         pass
 
+class PullDataF(Frame):
 
+    def __init__(self):
+        super().__init__()
 
+        self.initUI()
 
+    def initUI(self):
+        pass
+
+class ComparisonDataF(Frame):
+
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        pass
 
 
 
 def main():
-
     root = Tk()
     root.geometry("250x150+300+300")
-    app = Example()
+    app = DataRequestF()
     root.mainloop()
 
 
