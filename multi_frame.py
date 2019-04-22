@@ -18,11 +18,11 @@ class tempTk(Tk):
 
         self.frames = {}
 
-        frame = StartPage(container, self)
+        for F in (StartPage, PageOne):
+            frame = F(container, self)
+            frame.grid(row=0, column=0, sticky="nsew")
+            self.frames[F] = frame
 
-        self.frames[StartPage] = frame
-
-        frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame(StartPage)
 
@@ -36,6 +36,24 @@ class StartPage(Frame):
         Frame.__init__(self, parent)
         label = Label(self, text="Start Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
+
+        button1 = Button(self, text="Visit Page", command=lambda: controller.show_frame(PageOne))
+        button1.pack()
+
+        button2 = Button(self, text="Visit Page", command=lambda: controller.show_frame(PageOne))
+        button2.pack()
+
+        button3 = Button(self, text="Visit Page", command=lambda: controller.show_frame(PageOne))
+        button3.pack()
+
+class PageOne(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        label = Label(self, text="Page 1", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        button1 = Button(self, text="Back to Home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
 
 
 app = tempTk()
