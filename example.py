@@ -34,7 +34,7 @@ def animate(i):
     a.clear()
     test1 = list(pullData['First'])
     test2 = list(pullData['Second'])
-    # print(test1)
+    print(test1)z
 
     a.plot(test1, test2)
 
