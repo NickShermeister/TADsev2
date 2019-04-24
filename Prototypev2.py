@@ -13,6 +13,8 @@ from matplotlib.figure import Figure
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
+import numpy as np
+
 
 LARGE_FONT = ("Verdana", 12)
 HEIGHT = 1000
@@ -21,7 +23,63 @@ WIDTH = 1000
 dataIn = 0
 fileloc = 0
 
+meanPace = 0
+meanPull = 0
+
+paceDistribution = [0, 0, 0, 0, 0]
+pullDistribution = [0, 0, 0, 0, 0]
+
+firstColumn = "First"
+secondColumn = "Second"
+
+upperPercentile = 95
+lowerPercentil = 5
+
+mean1 = -1
+mean2 = -1
+
 # When re-importing data, just completely destroy then re-create with the new data
+
+def DataCalculations():
+    global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution
+
+    highBound1 = np.percentile(dataIn[firstColumn], upperPercentile)
+    lowBound1 = np.percentile(dataIn[firstColumn], lowerPercentile)
+    highBound2 = np.percentile(dataIn[secondColumn], upperPercentile)
+    lowBound2 = np.percentile(dataIn[secondColumn], lowerPercentile)
+
+    valid_nums1 = []
+    valid_nums2 = []
+
+    for x in dataIn[firstColumn]:
+        if x <= highBound1 and x >= lowBound1:
+            valid_nums1.append(x)
+    valid_nums1.sort()
+
+    for x in dataIn[secondColumn]:
+        if x <= highBound2 and x >= lowBound2:
+            valid_nums2.append(x)
+    valid_nums2.sort()
+
+    #Means -- let it be of middle 90% of data?
+
+    mean1 = np.mean(valid_nums1)
+    mean2 = np.mean(valid_nums2)
+
+
+    #Distributions
+    paceDistribution[0] =  len(valid_nums1[ numpy.where( valid_nums1 < 2.0 ) ])
+    paceDistribution[1] =  len(valid_nums1[ numpy.where( valid_nums1 < 2.45 and valid_nums1 >= 2.0 ) ])
+    paceDistribution[2] =  len(valid_nums1[ numpy.where( valid_nums1 < 3.25 and valid_nums1 >= 2.45 ) ])
+    paceDistribution[3] =  len(valid_nums1[ numpy.where( valid_nums1 < 3.95 and valid_nums1 >= 3.25 ) ])
+    paceDistribution[4] =  len(valid_nums1[ numpy.where( valid_nums1 >= 3.95 ) ])
+
+    pullDistribution[0] =  len(valid_nums2[ numpy.where( valid_nums2 < 2.5 ) ])
+    pullDistribution[1] =  len(valid_nums2[ numpy.where( valid_nums2 < 5 and valid_nums2 >= 2.0 ) ])
+    pullDistribution[2] =  len(valid_nums2[ numpy.where( valid_nums2 < 7.5 and valid_nums2 >= 5 ) ])
+    pullDistribution[3] =  len(valid_nums2[ numpy.where( valid_nums2 < 10 and valid_nums2 >= 7.5 ) ])
+    pullDistribution[4] =  len(valid_nums2[ numpy.where( valid_nums2 >= 10 ) ])
+
 
 
 class containerClass(Tk):
@@ -40,11 +98,12 @@ class containerClass(Tk):
 
         self.frames = {}
 
+
         for F in (DataImportF, BasicDataF, PaceDataF):
             frame = F(container, self)
             frame.grid(row=0, column=0, sticky="nsew")
             self.frames[F] = frame
-        
+
         self.show_frame(DataImportF)
 
     def requestInfo(self):
@@ -101,6 +160,12 @@ class BasicDataF(Frame):
         button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
         button2.pack()
 
+        button3 = Button(self, text="Go to more pull data [to be implemented]", command=lambda: controller.show_frame(PullDataF))
+        button3.pack()
+
+        button4 = Button(self, text="Compare this data to the averages [to be implemented]", command=lambda: controller.show_frame(AverageDataF))
+        button4.pack()
+
     def calcInfo(self):
         pass
 
@@ -118,19 +183,14 @@ class PaceDataF(Frame):
         self.f = Figure()
         self.a = self.f.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
-        # self.canvas.draw()
-
-
 
     def update_plot(self):
-        # self.canvas.update_plot
-        # self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
+        global firstColumn
+        global secondColumn
         self.a.clear()
-        # self.canvas.delete('all')
-        # self.canvas.clear()
         print(dataIn)
-        first = list(dataIn['First'])
-        second = list(dataIn['Second'])
+        first = list(dataIn[firstColumn])
+        second = list(dataIn[secondColumn])
         print(first)
         print(second)
         self.a.plot(first, second)
