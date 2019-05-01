@@ -47,16 +47,21 @@ colorDict = {0:"red", 1:"yellow", 2:"green", 3:"yellow", 4:"red"}
 paceBorders = [2.0, 2.45, 3.25, 3.95]
 pullBorders = [2.5, 5.0, 7.5, 10]
 
+paceBins = [0, 2.0, 2.45, 3.25, 3.95]
+pullBins = [0, 2.5, 5.0, 7.5, 10]
+
 paceArea = -1
 pullArea = -1
 
 # When re-importing data, just completely destroy then re-create with the new data
 def DataCalculations():
     global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-    global paceBorders, pullBorders, paceArea, pullArea
+    global paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
 
     rawPace = np.array(dataIn[firstColumn])
     rawPull = np.array(dataIn[secondColumn])
+    paceBins.append(max(rawPace))
+    pullBins.append(max(rawPull))
 
     highBound1 = np.percentile(rawPace, upperPercentile)
     lowBound1 = np.percentile(rawPace, lowerPercentile)
@@ -141,6 +146,9 @@ class containerClass(Tk):
 
         for F in (DataImportF, BasicDataF, PaceDataF):
             frame = F(container, self)
+            # if F in (PaceDataF, PullDataF):
+            #     frame.grid(row=2, column=0, sticky="nsew")
+            # else:
             frame.grid(row=0, column=0, sticky="nsew")
             self.frames[F] = frame
 
@@ -194,7 +202,6 @@ class BasicDataF(Frame):
         self.text1 = Text(self, height=32, width=32)
         self.text1.config(width=50, height=5)
         self.text1.pack_propagate(0)
-
         self.text1.pack()
 
         button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
@@ -223,7 +230,6 @@ class BasicDataF(Frame):
         paceColor = colorDict[paceArea]
         pullColor = colorDict[pullArea]
 
-
         self.text1.tag_config("paceColor", background=paceColor, foreground="blue")
         self.text1.tag_config("pullColor", background=pullColor, foreground="blue")
 
@@ -235,33 +241,53 @@ class PaceDataF(Frame):
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
-        button1.pack()
+        button1.pack(pady=20,padx=20)
 
         global dataIn
-        self.f = Figure()
-        self.a = self.f.add_subplot(111)
-        self.canvas = FigureCanvasTkAgg(self.f, master=self)  # A tk.DrawingArea.
+        self.f = Figure(figsize =(2,2))
+        # self.f.suptitle("Pace Data Display")
+        self.a = self.f.add_subplot(1,2,1)
+        self.b = self.f.add_subplot(1,2,2)
+        self.canvas = FigureCanvasTkAgg(self.f, master=self)
+
+        # self.text1 = Text(self, height=32, width=32)
+        # self.text1.config(width=50, height=5)
+        # self.text1.pack_propagate(0)
+        # self.text1.pack()
+
 
     def update(self):
-        global firstColumn
-        global secondColumn
+        global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
+        global colorDict, paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
+
         self.a.clear()
+        self.b.clear()
         print(dataIn)
         first = list(dataIn[firstColumn])
         second = list(dataIn[secondColumn])
         print(first)
         print(second)
-        self.a.plot(first, second)
+        self.a.plot(first)
+        self.a.set_title('Pace over Time')
+
+
+        self.b.hist(second, bins=pullBins)
+        self.b.patches[0].set_color('r')
+        self.b.patches[1].set_color('b')
+        self.b.patches[2].set_color('g')
+        self.b.patches[3].set_color('b')
+        self.b.patches[4].set_color('r')
+        self.b.set_title('Histogram of Pace Distribution')
+
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
-
-
+class PullDataF(Frame):
+    def __init__():
+        pass
 
 def main():
-
-    # print(dataIn)
-    # plot()
+    # matplotlib.pyplot.subplots_adjust()
     app = containerClass()
     app.mainloop()
 
