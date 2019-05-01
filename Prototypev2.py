@@ -16,7 +16,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 import numpy as np
 
 
-LARGE_FONT = ("Verdana", 12)
+DEFAULT_FONT = ("Verdana", 12)
 HEIGHT = 1000
 WIDTH = 1000
 
@@ -42,7 +42,7 @@ lowerPercentile = 5
 mean1 = -1
 mean2 = -1
 
-colorDict = {1:"red", 2:"yellow", 3:"green", 4:"yellow", 5:"red"}
+colorDict = {0:"red", 1:"yellow", 2:"green", 3:"yellow", 4:"red"}
 
 paceBorders = [2.0, 2.45, 3.25, 3.95]
 pullBorders = [2.5, 5.0, 7.5, 10]
@@ -88,22 +88,22 @@ def DataCalculations():
 
     if(mean1 < paceBorders[0]):
         paceArea = 0;
-    else if(mean1 < paceBorders[1]):
+    elif(mean1 < paceBorders[1]):
         paceArea = 1;
-    else if(mean1 < paceBorders[2]):
+    elif(mean1 < paceBorders[2]):
         paceArea = 2;
-    else if(mean1 < paceBorders[3]):
+    elif(mean1 < paceBorders[3]):
         paceArea = 3;
     else:
         paceArea = 4;
 
     if(mean2 < pullBorders[0]):
         pullArea = 0;
-    else if(mean2 < pullBorders[1]):
+    elif(mean2 < pullBorders[1]):
         pullArea = 1;
-    else if(mean2 < pullBorders[2]):
+    elif(mean2 < pullBorders[2]):
         pullArea = 2;
-    else if(mean2 < pullBorders[3]):
+    elif(mean2 < pullBorders[3]):
         pullArea = 3;
     else:
         pullArea = 4;
@@ -123,7 +123,6 @@ def DataCalculations():
     pullDistribution[4] =  len(valid_nums2[ np.where( valid_nums2.all() >= 10 ) ])
 
 
-
 class containerClass(Tk):
 
     def __init__(self, *args, **kwargs):
@@ -139,7 +138,6 @@ class containerClass(Tk):
         self.geometry(geometryString)
 
         self.frames = {}
-
 
         for F in (DataImportF, BasicDataF, PaceDataF):
             frame = F(container, self)
@@ -168,7 +166,7 @@ class DataImportF(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="Data Import Page", font=LARGE_FONT)
+        label = Label(self, text="Data Import Page", font=DEFAULT_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Imported Pace & Pull Data", command=lambda: controller.requestInfo())
@@ -187,15 +185,15 @@ class BasicDataF(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
 
-        label = Label(self, text="Basic Data Information", font=LARGE_FONT)
+        label = Label(self, text="Basic Data Information", font=DEFAULT_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Import Page", command=lambda: controller.show_frame(DataImportF))
         button1.pack()
 
         self.text1 = Text(self, height=32, width=32)
+        self.text1.config(width=50, height=5)
         self.text1.pack_propagate(0)
-
 
         self.text1.pack()
 
@@ -210,29 +208,30 @@ class BasicDataF(Frame):
 
     def update(self):
         global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-        global colorDict, paceBorders, pullBorders
+        global colorDict, paceBorders, pullBorders, paceArea, pullArea
+        self.text1.delete('1.0', END)
 
 
-        paceString = "The average pace of the dog is: %s\n" % mean1
-        pullString = "The average pull of the dog is: %s\n" % mean2
+        paceString = "The average pace of the dog is: %s\n\n" % mean1
+        pullString = "The average pull of the dog is: %s\n\n" % mean2
         self.text1.insert(END, paceString)
         self.text1.insert(END, pullString)
 
-        self.text1.tag_add("paceColor", "1.31", "1.35")
-        self.test1.tag_add("pullColor", "1.31", "1.35")
+        self.text1.tag_add("paceColor", "1.32", "1.36")
+        self.text1.tag_add("pullColor", "3.32", "3.36")
+
+        paceColor = colorDict[paceArea]
+        pullColor = colorDict[pullArea]
 
 
-
-
-
-        self.text1.tag_config("paceColor", background="yellow", foreground="blue")
-        self.text1.tag_config("pullColor", background="yellow", foreground="blue")
+        self.text1.tag_config("paceColor", background=paceColor, foreground="blue")
+        self.text1.tag_config("pullColor", background=pullColor, foreground="blue")
 
 
 class PaceDataF(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="Pace Data", font=LARGE_FONT)
+        label = Label(self, text="Pace Data", font=DEFAULT_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
