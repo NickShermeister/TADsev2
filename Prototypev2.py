@@ -15,8 +15,10 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
 import numpy as np
 
+# DEFAULT_FONT_BUTTON = tkFont.Font(family='Verdana', size=16) #, weight=tkFont.BOLD)
 
-DEFAULT_FONT = ("Verdana", 12)
+# DEFAULT_FONT = ("Verdana", 16)
+TITLE_FONT = ("Verdana", 30)
 HEIGHT = 1000
 WIDTH = 700
 
@@ -31,7 +33,6 @@ pullDistribution = [0, 0, 0, 0, 0]
 
 paceProcessed = 0
 pullProcessed = 0
-
 
 firstColumn = "Pace"
 secondColumn = "Pull"
@@ -52,6 +53,33 @@ pullBins = [0, 2.5, 5.0, 7.5, 10]
 
 paceArea = -1
 pullArea = -1
+
+hspacee = 0.4
+
+#TODO:
+'''
+1) Make all buttons bigger
+2) Make the coloring of the textbox more readable
+3) Make the text on the basic data information page bigger
+4) Truncate to what the average pace/pull rounds to
+5) Less whitespace above the Pace/pull over time graphs
+6) Turn pace/pull over time to scatterplot over time
+7) Maybe more post-processing??
+8) Make all text bigger sizes
+9) Comment unused buttons
+10) More space on pages between things (padding) to balance the empty space
+11) Maybe a little larger text boxes and center the text
+12) Text descriptions of graphs
+13) Something on the data import page to make it more engaging!!
+
+
+'''
+
+#TODONE:
+'''
+
+'''
+
 
 # When re-importing data, just completely destroy then re-create with the new data
 def DataCalculations():
@@ -175,7 +203,7 @@ class DataImportF(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="Data Import Page", font=DEFAULT_FONT)
+        label = Label(self, text="Data Import Page", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Imported Pace & Pull Data", command=lambda: controller.requestInfo())
@@ -194,7 +222,7 @@ class BasicDataF(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
 
-        label = Label(self, text="Basic Data Information", font=DEFAULT_FONT)
+        label = Label(self, text="Basic Data Information", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Import Page", command=lambda: controller.show_frame(DataImportF))
@@ -237,8 +265,9 @@ class BasicDataF(Frame):
 
 class PaceDataF(Frame):
     def __init__(self, parent, controller):
+        global hspacee
         Frame.__init__(self, parent)
-        label = Label(self, text="Pace Data", font=DEFAULT_FONT)
+        label = Label(self, text="Pace Data", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
@@ -246,7 +275,7 @@ class PaceDataF(Frame):
 
         global dataIn
         self.f = Figure(figsize =(4,8))
-        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.25)
+        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=hspacee)
         # self.f.suptitle("Pace Data Display")
         self.a = self.f.add_subplot(2,1,1)
         self.b = self.f.add_subplot(2,1,2)
@@ -259,8 +288,9 @@ class PaceDataF(Frame):
 
 class PullDataF(Frame):
     def __init__(self, parent, controller):
+        global hspacee
         Frame.__init__(self, parent)
-        label = Label(self, text="Pull Data", font=DEFAULT_FONT)
+        label = Label(self, text="Pull Data", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
@@ -268,7 +298,7 @@ class PullDataF(Frame):
 
         global dataIn
         self.f = Figure(figsize =(4,8))
-        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.25)
+        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=hspacee)
         # self.f.suptitle("Pace Data Display")
         self.a = self.f.add_subplot(2,1,1)
         self.b = self.f.add_subplot(2,1,2)
@@ -286,13 +316,16 @@ def updateGraph(FrameIn, type):
     if(type == "Pace"):
         data = list(paceProcessed)
         borders = paceBorders
+        axisLabel = "Speed (mph)"
     else:
         data = list(pullProcessed)
         borders = pullBorders
+        axisLabel = "Force (lbs)"
     title1 = type + " Over Time"
     title2 = "Histogram of " + type + " Distribution"
     FrameIn.a.plot(data)
     FrameIn.a.set_title(title1)
+    FrameIn.a.set(xlabel="Time (s)", ylabel=axisLabel)
 
     FrameIn.b.hist(data)
     for i, rectangle in enumerate(FrameIn.b.patches):  # iterate over every bar
@@ -309,6 +342,7 @@ def updateGraph(FrameIn, type):
             FrameIn.b.patches[i].set_color('r')
 
     FrameIn.b.set_title(title2)
+    FrameIn.b.set(xlabel=axisLabel, ylabel="Number of Measurements")
     FrameIn.canvas.draw()
     FrameIn.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
