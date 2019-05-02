@@ -18,7 +18,7 @@ import numpy as np
 
 DEFAULT_FONT = ("Verdana", 12)
 HEIGHT = 1000
-WIDTH = 1000
+WIDTH = 700
 
 dataIn = 0
 fileloc = 0
@@ -33,8 +33,8 @@ paceProcessed = 0
 pullProcessed = 0
 
 
-firstColumn = "First"
-secondColumn = "Second"
+firstColumn = "Pace"
+secondColumn = "Pull"
 
 upperPercentile = 95
 lowerPercentile = 5
@@ -60,8 +60,7 @@ def DataCalculations():
 
     rawPace = np.array(dataIn[firstColumn])
     rawPull = np.array(dataIn[secondColumn])
-    paceBins.append(max(rawPace))
-    pullBins.append(max(rawPull))
+
 
     highBound1 = np.percentile(rawPace, upperPercentile)
     lowBound1 = np.percentile(rawPace, lowerPercentile)
@@ -74,15 +73,18 @@ def DataCalculations():
     for x in rawPace:
         if x <= highBound1 and x >= lowBound1:
             valid_nums1.append(x)
-    valid_nums1.sort()
+
 
     for x in rawPull:
         if x <= highBound2 and x >= lowBound2:
             valid_nums2.append(x)
-    valid_nums2.sort()
 
-    paceProcessed = valid_nums1
-    pullProcessed = valid_nums2
+
+    paceProcessed = list(valid_nums1)
+    pullProcessed = list(valid_nums2)
+
+    valid_nums1.sort()
+    valid_nums2.sort()
 
     valid_nums1 = np.array(valid_nums1)
     valid_nums2 = np.array(valid_nums2)
@@ -139,12 +141,12 @@ class containerClass(Tk):
 
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-        geometryString = str(HEIGHT) + "x" + str(WIDTH)
+        geometryString = str(WIDTH) + "x" + str(HEIGHT)
         self.geometry(geometryString)
 
         self.frames = {}
 
-        for F in (DataImportF, BasicDataF, PaceDataF):
+        for F in (DataImportF, BasicDataF, PaceDataF, PullDataF):
             frame = F(container, self)
             # if F in (PaceDataF, PullDataF):
             #     frame.grid(row=2, column=0, sticky="nsew")
@@ -166,7 +168,6 @@ class containerClass(Tk):
 
     def show_frame(self, cont):
         frame = self.frames[cont]
-        # if(cont in [PaceDataF]):
         frame.update()
         frame.tkraise()
 
@@ -207,7 +208,7 @@ class BasicDataF(Frame):
         button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
         button2.pack()
 
-        button3 = Button(self, text="Go to more pull data [to be implemented]", command=lambda: controller.show_frame(PullDataF))
+        button3 = Button(self, text="Go to more pull data", command=lambda: controller.show_frame(PullDataF))
         button3.pack()
 
         button4 = Button(self, text="Compare this data to the averages [to be implemented]", command=lambda: controller.show_frame(AverageDataF))
@@ -244,50 +245,74 @@ class PaceDataF(Frame):
         button1.pack(pady=20,padx=20)
 
         global dataIn
-        self.f = Figure(figsize =(2,2))
+        self.f = Figure(figsize =(4,8))
+        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.25)
         # self.f.suptitle("Pace Data Display")
-        self.a = self.f.add_subplot(1,2,1)
-        self.b = self.f.add_subplot(1,2,2)
+        self.a = self.f.add_subplot(2,1,1)
+        self.b = self.f.add_subplot(2,1,2)
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
 
-        # self.text1 = Text(self, height=32, width=32)
-        # self.text1.config(width=50, height=5)
-        # self.text1.pack_propagate(0)
-        # self.text1.pack()
-
-
     def update(self):
-        global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-        global colorDict, paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
-
-        self.a.clear()
-        self.b.clear()
-        print(dataIn)
-        first = list(dataIn[firstColumn])
-        second = list(dataIn[secondColumn])
-        print(first)
-        print(second)
-        self.a.plot(first)
-        self.a.set_title('Pace over Time')
+        updateGraph(self, "Pace")
 
 
-        self.b.hist(second, bins=pullBins)
-        self.b.patches[0].set_color('r')
-        self.b.patches[1].set_color('b')
-        self.b.patches[2].set_color('g')
-        self.b.patches[3].set_color('b')
-        self.b.patches[4].set_color('r')
-        self.b.set_title('Histogram of Pace Distribution')
-
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
 class PullDataF(Frame):
-    def __init__():
-        pass
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        label = Label(self, text="Pull Data", font=DEFAULT_FONT)
+        label.pack(pady=10,padx=10)
+
+        button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
+        button1.pack(pady=20,padx=20)
+
+        global dataIn
+        self.f = Figure(figsize =(4,8))
+        self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.25)
+        # self.f.suptitle("Pace Data Display")
+        self.a = self.f.add_subplot(2,1,1)
+        self.b = self.f.add_subplot(2,1,2)
+        self.canvas = FigureCanvasTkAgg(self.f, master=self)
+
+    def update(self):
+        updateGraph(self, "Pull")
+
+def updateGraph(FrameIn, type):
+    global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
+    global colorDict, paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
+
+    FrameIn.a.clear()
+    FrameIn.b.clear()
+    if(type == "Pace"):
+        data = list(paceProcessed)
+        borders = paceBorders
+    else:
+        data = list(pullProcessed)
+        borders = pullBorders
+    title1 = type + " Over Time"
+    title2 = "Histogram of " + type + " Distribution"
+    FrameIn.a.plot(data)
+    FrameIn.a.set_title(title1)
+
+    FrameIn.b.hist(data)
+    for i, rectangle in enumerate(FrameIn.b.patches):  # iterate over every bar
+        tmp = abs(rectangle.get_x() + rectangle.get_width() )
+        if tmp < borders[0]:  # we are searching for the bar with x cordinate
+            FrameIn.b.patches[i].set_color('r')
+        elif tmp < borders[1]:
+            FrameIn.b.patches[i].set_color('b')
+        elif tmp < borders[2]:
+            FrameIn.b.patches[i].set_color('g')
+        elif tmp < borders[3]:
+            FrameIn.b.patches[i].set_color('b')
+        else:
+            FrameIn.b.patches[i].set_color('r')
+
+    FrameIn.b.set_title(title2)
+    FrameIn.canvas.draw()
+    FrameIn.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
 def main():
-    # matplotlib.pyplot.subplots_adjust()
     app = containerClass()
     app.mainloop()
 
