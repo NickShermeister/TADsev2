@@ -1,7 +1,8 @@
-from tkinter import Tk, BOTH, Label, TOP, YES, Text, END
-from tkinter.ttk import Frame, Button, Style
+from tkinter import Tk, BOTH, Label, TOP, YES, Text, END, Button, font
+from tkinter.ttk import Frame, Style
 from PIL import Image, ImageTk
 from tkinter.filedialog import askopenfilename
+# import tkFont
 # import csv
 import pandas as pd
 import matplotlib
@@ -15,12 +16,14 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
 import numpy as np
 
-# DEFAULT_FONT_BUTTON = tkFont.Font(family='Verdana', size=16) #, weight=tkFont.BOLD)
+DEFAULT_FONT_BUTTON = 0
 
 # DEFAULT_FONT = ("Verdana", 16)
 TITLE_FONT = ("Verdana", 30)
 HEIGHT = 1000
 WIDTH = 700
+BUTTON_HEIGHT = 1
+BUTTON_WIDTH = 30
 
 dataIn = 0
 fileloc = 0
@@ -162,7 +165,9 @@ class containerClass(Tk):
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, None, None)
+
         container = Frame(self)
+        DEFAULT_FONT_BUTTON = font.Font(family='Verdana', size=130, weight='bold')
 
         # self.dataIn = args[0]
         container.pack(sid="top", fill="both", expand = True)
@@ -176,19 +181,15 @@ class containerClass(Tk):
 
         for F in (DataImportF, BasicDataF, PaceDataF, PullDataF):
             frame = F(container, self)
-            # if F in (PaceDataF, PullDataF):
-            #     frame.grid(row=2, column=0, sticky="nsew")
-            # else:
             frame.grid(row=0, column=0, sticky="nsew")
             self.frames[F] = frame
 
         self.show_frame(DataImportF)
 
     def requestInfo(self):
-        global dataIn
-        global fileloc
+        global dataIn, fileloc
         filename = askopenfilename(initialdir = dir_path,title = "Select file") # show an "Open" dialog box and return the path to the selected file
-        print(filename)
+        # print(filename)
         fileloc = filename
         dataIn = pd.read_csv(fileloc)
         DataCalculations()
@@ -207,13 +208,14 @@ class DataImportF(Frame):
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Imported Pace & Pull Data", command=lambda: controller.requestInfo())
+        button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack(pady=HEIGHT/3)
 
-        button2 = Button(self, text="Imported Only Pace Data (coming soon)")#, command=lambda: controller.show_frame(PageOne))
-        button2.pack()
-
-        button3 = Button(self, text="Imported Only Pull Data (coming soon)")#, command=lambda: controller.show_frame(PageOne))
-        button3.pack()
+        # button2 = Button(self, text="Imported Only Pace Data (coming soon)")#, command=lambda: controller.show_frame(PageOne))
+        # button2.pack()
+        #
+        # button3 = Button(self, text="Imported Only Pull Data (coming soon)")#, command=lambda: controller.show_frame(PageOne))
+        # button3.pack()
 
     def update(self):
         pass
@@ -226,20 +228,24 @@ class BasicDataF(Frame):
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Import Page", command=lambda: controller.show_frame(DataImportF))
+        button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack()
 
         self.text1 = Text(self, height=32, width=32)
-        self.text1.config(width=50, height=5)
+        self.text1.config(width=46, height=5)
         self.text1.pack_propagate(0)
         self.text1.pack()
 
         button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
+        button2.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button2.pack()
 
         button3 = Button(self, text="Go to more pull data", command=lambda: controller.show_frame(PullDataF))
+        button3.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button3.pack()
 
         button4 = Button(self, text="Compare this data to the averages [to be implemented]", command=lambda: controller.show_frame(AverageDataF))
+        button4.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button4.pack()
 
     def update(self):
@@ -271,6 +277,7 @@ class PaceDataF(Frame):
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
+        button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
         global dataIn
@@ -294,6 +301,7 @@ class PullDataF(Frame):
         label.pack(pady=10,padx=10)
 
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
+        button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
         global dataIn
