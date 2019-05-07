@@ -20,6 +20,7 @@ DEFAULT_FONT_BUTTON = 0
 
 # DEFAULT_FONT = ("Verdana", 16)
 TITLE_FONT = ("Verdana", 30)
+TEXT_FONT = ("Verdana", 18)
 HEIGHT = 1000
 WIDTH = 700
 BUTTON_HEIGHT = 1
@@ -46,7 +47,10 @@ lowerPercentile = 5
 mean1 = -1
 mean2 = -1
 
-colorDict = {0:"red", 1:"yellow", 2:"green", 3:"yellow", 4:"red"}
+RED_COLORING = "#FF3300"#"#FF4500"
+GREEN_COLORING = "#7CFC00"
+YELLOW_COLORING = "yellow"
+colorDict = {0:RED_COLORING, 1:YELLOW_COLORING, 2:GREEN_COLORING, 3:YELLOW_COLORING, 4:RED_COLORING}
 
 paceBorders = [2.0, 2.45, 3.25, 3.95]
 pullBorders = [2.5, 5.0, 7.5, 10]
@@ -57,30 +61,34 @@ pullBins = [0, 2.5, 5.0, 7.5, 10]
 paceArea = -1
 pullArea = -1
 
-hspacee = 0.4
+hspacee = 0.35
 
 #TODO:
 '''
-1) Make all buttons bigger
-2) Make the coloring of the textbox more readable
-3) Make the text on the basic data information page bigger
-4) Truncate to what the average pace/pull rounds to
 5) Less whitespace above the Pace/pull over time graphs
-6) Turn pace/pull over time to scatterplot over time
+
 7) Maybe more post-processing??
-8) Make all text bigger sizes
-9) Comment unused buttons
+
+
 10) More space on pages between things (padding) to balance the empty space
 11) Maybe a little larger text boxes and center the text
 12) Text descriptions of graphs
 13) Something on the data import page to make it more engaging!!
-
+14) Have everything done
 
 '''
 
 #TODONE:
 '''
+1) Make all buttons bigger
+2) Make the coloring of the textbox more readable
+3) Make the text on the basic data information page bigger
+4) Truncate to what the average pace/pull rounds to
 
+6) Turn pace/pull over time to scatterplot over time
+
+8) Make all text bigger sizes
+9) Comment unused buttons
 '''
 
 
@@ -160,7 +168,6 @@ def DataCalculations():
     pullDistribution[3] =  len(valid_nums2[ np.where( valid_nums2.all() < 10 and valid_nums2.all() >= 7.5 ) ])
     pullDistribution[4] =  len(valid_nums2[ np.where( valid_nums2.all() >= 10 ) ])
 
-
 class containerClass(Tk):
 
     def __init__(self, *args, **kwargs):
@@ -232,7 +239,7 @@ class BasicDataF(Frame):
         button1.pack()
 
         self.text1 = Text(self, height=32, width=32)
-        self.text1.config(width=46, height=5)
+        self.text1.config(width=46, height=5, font=TEXT_FONT)
         self.text1.pack_propagate(0)
         self.text1.pack()
 
@@ -244,9 +251,9 @@ class BasicDataF(Frame):
         button3.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button3.pack()
 
-        button4 = Button(self, text="Compare this data to the averages [to be implemented]", command=lambda: controller.show_frame(AverageDataF))
-        button4.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
-        button4.pack()
+        # button4 = Button(self, text="Compare this data to the averages [to be implemented]", command=lambda: controller.show_frame(AverageDataF))
+        # button4.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
+        # button4.pack()
 
     def update(self):
         global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
@@ -254,20 +261,19 @@ class BasicDataF(Frame):
         self.text1.delete('1.0', END)
 
 
-        paceString = "The average pace of the dog is: %s\n\n" % mean1
-        pullString = "The average pull of the dog is: %s\n\n" % mean2
+        paceString = "The average pace of the dog is: %2.2f\n\n" % mean1
+        pullString = "The average pull of the dog is: %2.2f\n\n" % mean2
         self.text1.insert(END, paceString)
         self.text1.insert(END, pullString)
 
-        self.text1.tag_add("paceColor", "1.32", "1.36")
-        self.text1.tag_add("pullColor", "3.32", "3.36")
+        self.text1.tag_add("paceColor", "1.32", "1.42")
+        self.text1.tag_add("pullColor", "3.32", "3.42")
 
         paceColor = colorDict[paceArea]
         pullColor = colorDict[pullArea]
 
-        self.text1.tag_config("paceColor", background=paceColor, foreground="blue")
-        self.text1.tag_config("pullColor", background=pullColor, foreground="blue")
-
+        self.text1.tag_config("paceColor", background=paceColor, foreground="black")
+        self.text1.tag_config("pullColor", background=pullColor, foreground="black")
 
 class PaceDataF(Frame):
     def __init__(self, parent, controller):
@@ -290,8 +296,6 @@ class PaceDataF(Frame):
 
     def update(self):
         updateGraph(self, "Pace")
-
-
 
 class PullDataF(Frame):
     def __init__(self, parent, controller):
@@ -331,7 +335,7 @@ def updateGraph(FrameIn, type):
         axisLabel = "Force (lbs)"
     title1 = type + " Over Time"
     title2 = "Histogram of " + type + " Distribution"
-    FrameIn.a.plot(data)
+    FrameIn.a.scatter(range(0, len(data)), data) #TODO:Change to over time
     FrameIn.a.set_title(title1)
     FrameIn.a.set(xlabel="Time (s)", ylabel=axisLabel)
 
@@ -354,10 +358,13 @@ def updateGraph(FrameIn, type):
     FrameIn.canvas.draw()
     FrameIn.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
+
+#Instantiate the app then run its mainloop (function that tkinter runs)
 def main():
     app = containerClass()
     app.mainloop()
 
 
+#Set up the main function
 if __name__ == '__main__':
     main()
