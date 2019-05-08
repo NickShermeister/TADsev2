@@ -195,51 +195,61 @@ def DataCalculations():
     pullDistribution[4] =  len(valid_nums2[ np.where( valid_nums2.all() >= pullBorders[3] ) ])
 
 class containerClass(Tk):
+    #Container class that extends the base Tk container.
 
     def __init__(self, *args, **kwargs):
-        Tk.__init__(self, None, None)
+        Tk.__init__(self, None, None)   #It's parent class's init is necessary.
 
+        #Start a container
         container = Frame(self)
+
+        #Try to set the default font button (issues regarding this still)
         DEFAULT_FONT_BUTTON = font.Font(family='Verdana', size=130, weight='bold')
 
-        # self.dataIn = args[0]
+        #Set up the container properties
         container.pack(sid="top", fill="both", expand = True)
-
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-        geometryString = str(WIDTH) + "x" + str(HEIGHT)
+        geometryString = str(WIDTH) + "x" + str(HEIGHT) #Convert the global variables to a string in the format geometry is looking for.
         self.geometry(geometryString)
 
+        #Set up a dictionary of frames and then popula
         self.frames = {}
-
         for F in (DataImportF, BasicDataF, PaceDataF, PullDataF):
             frame = F(container, self)
             frame.grid(row=0, column=0, sticky="nsew")
             self.frames[F] = frame
 
+        #Show the first frame
         self.show_frame(DataImportF)
 
     def requestInfo(self):
+        #Prompts the user to choose the csv containing the data of the walk to be analyzed.
         global dataIn, fileloc
         filename = askopenfilename(initialdir = dir_path,title = "Select file") # show an "Open" dialog box and return the path to the selected file
-        # print(filename)
         fileloc = filename
         dataIn = pd.read_csv(fileloc)
-        DataCalculations()
-        self.show_frame(BasicDataF)
+        DataCalculations() #Perform the data calculations elsewhere.
+        self.show_frame(BasicDataF) #Show the frame with the basic data.
 
     def show_frame(self, cont):
+        #Shows the desired frame, calls the frame's corresponding update function (which could just pass), then raise the frame to the top of the stack.
         frame = self.frames[cont]
         frame.update()
         frame.tkraise()
 
+
 class DataImportF(Frame):
+    #Class that holds the first frame, where the user can import their data.
 
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
+        Frame.__init__(self, parent)    #Call tkinter's class init.
+
+        #Set up the top label of the page.
         label = Label(self, text="Data Import Page", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
+        #Set up the buttons that allow the user to import the data they have. Buttons 2/3 we did not have time to implement.
         button1 = Button(self, text="Imported Pace & Pull Data", command=lambda: controller.requestInfo())
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack(pady=HEIGHT/3)
@@ -251,24 +261,30 @@ class DataImportF(Frame):
         # button3.pack()
 
     def update(self):
+        #Unneeded for this Frame.
         pass
 
 class BasicDataF(Frame):
+    #Frame containing the basic data summarized for readers.
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
+        Frame.__init__(self, parent) #Call parent init.
 
+        #Set up the label saying what page it is.
         label = Label(self, text="Basic Data Information", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
+        #Back button
         button1 = Button(self, text="Back to Import Page", command=lambda: controller.show_frame(DataImportF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack()
 
+        #Set up the text class that holds the importan user data
         self.text1 = Text(self, height=32, width=32)
         self.text1.config(width=46, height=3, font=TEXT_FONT)
         self.text1.pack_propagate(0)
         self.text1.pack()
 
+        #Set up buttons going to more data pages.
         button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
         button2.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button2.pack()
@@ -282,39 +298,45 @@ class BasicDataF(Frame):
         # button4.pack()
 
     def update(self):
+        #Update the displayed data based on input information.
         global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
         global colorDict, paceBorders, pullBorders, paceArea, pullArea
-        self.text1.delete('1.0', END)
 
+        self.text1.delete('1.0', END)   #Erase old data from textbox
 
+        #Input the basic strings
         paceString = "The average pace of the dog is: %2.2f\n\n" % meanPace
         pullString = "The average pull of the dog is: %2.2f\n\n" % meanPull
         self.text1.insert(END, paceString)
         self.text1.insert(END, pullString)
 
+        #Format the text as desired.
         self.text1.tag_add("paceColor", "1.32", "1.42")
         self.text1.tag_add("pullColor", "3.32", "3.42")
         self.text1.tag_add("Justification", "0.0", "10.100")
-
         paceColor = colorDict[paceArea]
         pullColor = colorDict[pullArea]
-
         self.text1.tag_config("paceColor", background=paceColor, foreground="black")
         self.text1.tag_config("pullColor", background=pullColor, foreground="black")
         self.text1.tag_config("Justification", justify="center")
 
 class PaceDataF(Frame):
+    #Frame containing the pace data frame
     def __init__(self, parent, controller):
+        #Basic frame setup
         global hspacee
         Frame.__init__(self, parent)
+
+        #Page defining label
         label = Label(self, text="Pace Data", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
+        #Back button
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
-        global dataIn
+        #Set up the figure with subplots
         self.f = Figure(figsize =(4,8))
         self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=hspacee)
         # self.f.suptitle("Pace Data Display")
@@ -323,20 +345,27 @@ class PaceDataF(Frame):
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
 
     def update(self):
+        #Calls the update graph method using the "Pace" distinction
         updateGraph(self, "Pace")
 
 class PullDataF(Frame):
+    #Frame containing the Pull Data Information
+
     def __init__(self, parent, controller):
+        #Basic frame setup
         global hspacee
         Frame.__init__(self, parent)
+
+        #Page defining label
         label = Label(self, text="Pull Data", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
+        #Back button
         button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
-        global dataIn
+        #Set up the figure with subplots
         self.f = Figure(figsize =(4,8))
         self.f.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=hspacee)
         # self.f.suptitle("Pace Data Display")
@@ -345,14 +374,19 @@ class PullDataF(Frame):
         self.canvas = FigureCanvasTkAgg(self.f, master=self)
 
     def update(self):
+        #Calls the update graph method using the "Pace" distinction
         updateGraph(self, "Pull")
 
 def updateGraph(FrameIn, type):
+    #Updates the graphs on the "update" page. Allows for input of "Pace" or "Pull" with the frame being changed to update the correct graph.
     global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
     global colorDict, paceBorders, pullBorders, paceArea, pullArea
 
+    #Clear old data.
     FrameIn.a.clear()
     FrameIn.b.clear()
+
+    #Set the data for pace or pull frame
     if(type == "Pace"):
         data = list(paceProcessed)
         borders = paceBorders
@@ -361,12 +395,15 @@ def updateGraph(FrameIn, type):
         data = list(pullProcessed)
         borders = pullBorders
         axisLabel = "Force (lbs)"
+
+    #Set up scatterplot
     title1 = type + " Over Time"
     title2 = "Histogram of " + type + " Distribution"
     FrameIn.a.scatter(range(0, len(data)), data) #TODO:Change to over time
     FrameIn.a.set_title(title1)
     FrameIn.a.set(xlabel="Time (s)", ylabel=axisLabel)
 
+    #Set up and then color histogram
     FrameIn.b.hist(data)
     for i, rectangle in enumerate(FrameIn.b.patches):  # iterate over every bar
         tmp = abs(rectangle.get_x() + rectangle.get_width() )
@@ -380,15 +417,13 @@ def updateGraph(FrameIn, type):
             FrameIn.b.patches[i].set_color('b')
         else:
             FrameIn.b.patches[i].set_color('r')
-
     FrameIn.b.set_title(title2)
     FrameIn.b.set(xlabel=axisLabel, ylabel="Number of Measurements")
     FrameIn.canvas.draw()
     FrameIn.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
-
-#Instantiate the app then run its mainloop (function that tkinter runs)
 def main():
+    #Instantiate the app then run its mainloop (function that tkinter runs)
     app = containerClass()
     app.mainloop()
 
