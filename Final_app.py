@@ -1,7 +1,11 @@
 '''
-An application created for the Seeing Eye.
+An application created for the Seeing Eye to aid in guide dog pairings
+
+Made for Technology, Accessibility, & Design Spring 2019
+Team Members: Nathan Lepore, Nicole Scheubert, Nicholas Sherman
 '''
 
+#Import Statements
 from tkinter import Tk, BOTH, Label, TOP, YES, Text, END, Button, font
 from tkinter.ttk import Frame, Style
 from PIL import Image, ImageTk
@@ -13,56 +17,59 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg #, NavigationToo
 from matplotlib.figure import Figure
 import numpy as np
 import os
-dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
+#Set the directory path of where we are now. The + "/../.." is to be implemented for executables.
+dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
 
 
 #Constant Declarations
 TITLE_FONT = ("Verdana", 30)
 TEXT_FONT = ("Verdana", 18)
 DEFAULT_FONT_BUTTON = 0 #Having issues with working correctly
-HEIGHT = 800 #Of the application's interface
-WIDTH = 700 #Of the application's interface
+HEIGHT = 800    #Of the application's interface
+WIDTH = 700     #Of the application's interface
 BUTTON_HEIGHT = 1
 BUTTON_WIDTH = 30
 
-#Global Variables
-dataIn = 0
-fileloc = 0
 
-meanPace = 0
-meanPull = 0
+#Global Variable Starts
 
-paceDistribution = [0, 0, 0, 0, 0]
-pullDistribution = [0, 0, 0, 0, 0]
+hspacee = 0.35  #Dictates the amount of space between subplots.
 
-paceProcessed = 0
-pullProcessed = 0
+dataIn = 0      #Stores the read data in
+fileloc = 0     #Saves the location of the file that is read.
 
+paceDistribution = [0, 0, 0, 0, 0]  #Saves distribution of pace in the different buckets given by the Seeing Eye
+pullDistribution = [0, 0, 0, 0, 0]  #Saves distribution of pull in the different buckets given by the Seeing Eye
+
+paceProcessed = 0   #List of the pace data after being processed
+pullProcessed = 0   #List of the pull data after being processed
+
+#Name of columns of relevent data.
 firstColumn = "Pace"
 secondColumn = "Pull"
 
+#Sets the limit of data that is eliminated from the sample set.
 upperPercentile = 95
 lowerPercentile = 5
 
-mean1 = -1
-mean2 = -1
+meanPace = -1  #Saves the mean pace of the dog after data processing
+meanPull = -1  #Saves the mean pull of the dog after processing
 
-RED_COLORING = "#FF3300"#"#FF4500"
+#Set up different color combinatiosn for the color dictionary used to decide the color of highlighting in the data information page.
+RED_COLORING = "#FF3300"
 GREEN_COLORING = "#7CFC00"
 YELLOW_COLORING = "yellow"
 colorDict = {0:RED_COLORING, 1:YELLOW_COLORING, 2:GREEN_COLORING, 3:YELLOW_COLORING, 4:RED_COLORING}
 
+#Note the boundaries
 paceBorders = [2.0, 2.45, 3.25, 3.95]
 pullBorders = [2.5, 5.0, 7.5, 10]
 
-paceBins = [0, 2.0, 2.45, 3.25, 3.95]
-pullBins = [0, 2.5, 5.0, 7.5, 10]
-
+#Says where in the buckets the mean falls.
 paceArea = -1
 pullArea = -1
 
-hspacee = 0.35
 
 #TODO:
 '''
@@ -71,8 +78,6 @@ hspacee = 0.35
 7) Maybe more post-processing??
 
 10) More space on pages between things (padding) to balance the empty space
-
-
 
 13) Something on the data import page to make it more engaging!!
 12) Text descriptions of graphs
@@ -107,27 +112,28 @@ BACKBURNER:
 
 11) Maybe a little larger text boxes and center the text
 
-
 '''
 
-
-# When re-importing data, just completely destroy then re-create with the new data
 def DataCalculations():
-    global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-    global paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
+    #Function that completes all application-backend calculations on the imported data.
+    global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
+    global paceBorders, pullBorders, paceArea, pullArea
 
+    #Extract the raw data from the imported data
     rawPace = np.array(dataIn[firstColumn])
     rawPull = np.array(dataIn[secondColumn])
 
-
+    #Get the bounds on the data based on the percentiles
     highBound1 = np.percentile(rawPace, upperPercentile)
     lowBound1 = np.percentile(rawPace, lowerPercentile)
     highBound2 = np.percentile(rawPull, upperPercentile)
     lowBound2 = np.percentile(rawPull, lowerPercentile)
 
+    #Holder lists
     valid_nums1 = []
     valid_nums2 = []
 
+    #Add the data to the valid_nums array. To be changed to have a matching time array once implemented.
     for x in rawPace:
         if x <= highBound1 and x >= lowBound1:
             valid_nums1.append(x)
@@ -137,10 +143,11 @@ def DataCalculations():
         if x <= highBound2 and x >= lowBound2:
             valid_nums2.append(x)
 
-
+    #Cast what ended up being a np array to a list and set it to the global information.
     paceProcessed = list(valid_nums1)
     pullProcessed = list(valid_nums2)
 
+    #Sort the data for more processing.
     valid_nums1.sort()
     valid_nums2.sort()
 
@@ -148,44 +155,44 @@ def DataCalculations():
     valid_nums2 = np.array(valid_nums2)
 
     #Means -- let it be of middle 90% of data?
-    mean1 = np.mean(valid_nums1)
-    mean2 = np.mean(valid_nums2)
+    meanPace = np.mean(valid_nums1)
+    meanPull = np.mean(valid_nums2)
 
-    if(mean1 < paceBorders[0]):
+    #Figure out in what bracket the average pace/pull is (what "Area" it's in)
+    if(meanPace < paceBorders[0]):
         paceArea = 0;
-    elif(mean1 < paceBorders[1]):
+    elif(meanPace < paceBorders[1]):
         paceArea = 1;
-    elif(mean1 < paceBorders[2]):
+    elif(meanPace < paceBorders[2]):
         paceArea = 2;
-    elif(mean1 < paceBorders[3]):
+    elif(meanPace < paceBorders[3]):
         paceArea = 3;
     else:
         paceArea = 4;
 
-    if(mean2 < pullBorders[0]):
+    if(meanPull < pullBorders[0]):
         pullArea = 0;
-    elif(mean2 < pullBorders[1]):
+    elif(meanPull < pullBorders[1]):
         pullArea = 1;
-    elif(mean2 < pullBorders[2]):
+    elif(meanPull < pullBorders[2]):
         pullArea = 2;
-    elif(mean2 < pullBorders[3]):
+    elif(meanPull < pullBorders[3]):
         pullArea = 3;
     else:
         pullArea = 4;
 
-
     #Distributions -- hardcoded based off of the sheet provided to us by our community partner
-    paceDistribution[0] =  len(valid_nums1[ np.where( valid_nums1.all() < 2.0 ) ])
-    paceDistribution[1] =  len(valid_nums1[ np.where( valid_nums1.all() < 2.45 and valid_nums1.all() >= 2.0 ) ])
-    paceDistribution[2] =  len(valid_nums1[ np.where( valid_nums1.all() < 3.25 and valid_nums1.all() >= 2.45 ) ])
-    paceDistribution[3] =  len(valid_nums1[ np.where( valid_nums1.all() < 3.95 and valid_nums1.all() >= 3.25 ) ])
-    paceDistribution[4] =  len(valid_nums1[ np.where( valid_nums1.all() >= 3.95 ) ])
+    paceDistribution[0] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[0] ) ])
+    paceDistribution[1] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[1] and valid_nums1.all() >= paceBorders[0] ) ])
+    paceDistribution[2] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[2] and valid_nums1.all() >= paceBorders[1] ) ])
+    paceDistribution[3] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[3] and valid_nums1.all() >= paceBorders[2] ) ])
+    paceDistribution[4] =  len(valid_nums1[ np.where( valid_nums1.all() >= paceBorders[3] ) ])
 
-    pullDistribution[0] =  len(valid_nums2[ np.where( valid_nums2.all() < 2.5 ) ])
-    pullDistribution[1] =  len(valid_nums2[ np.where( valid_nums2.all() < 5 and valid_nums2.all() >= 2.0 ) ])
-    pullDistribution[2] =  len(valid_nums2[ np.where( valid_nums2.all() < 7.5 and valid_nums2.all() >= 5 ) ])
-    pullDistribution[3] =  len(valid_nums2[ np.where( valid_nums2.all() < 10 and valid_nums2.all() >= 7.5 ) ])
-    pullDistribution[4] =  len(valid_nums2[ np.where( valid_nums2.all() >= 10 ) ])
+    pullDistribution[0] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[0] ) ])
+    pullDistribution[1] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[1] and valid_nums2.all() >= pullBorders[0] ) ])
+    pullDistribution[2] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[2] and valid_nums2.all() >= pullBorders[1] ) ])
+    pullDistribution[3] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[3] and valid_nums2.all() >= pullBorders[2] ) ])
+    pullDistribution[4] =  len(valid_nums2[ np.where( valid_nums2.all() >= pullBorders[3] ) ])
 
 class containerClass(Tk):
 
@@ -275,13 +282,13 @@ class BasicDataF(Frame):
         # button4.pack()
 
     def update(self):
-        global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
+        global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
         global colorDict, paceBorders, pullBorders, paceArea, pullArea
         self.text1.delete('1.0', END)
 
 
-        paceString = "The average pace of the dog is: %2.2f\n\n" % mean1
-        pullString = "The average pull of the dog is: %2.2f\n\n" % mean2
+        paceString = "The average pace of the dog is: %2.2f\n\n" % meanPace
+        pullString = "The average pull of the dog is: %2.2f\n\n" % meanPull
         self.text1.insert(END, paceString)
         self.text1.insert(END, pullString)
 
@@ -341,8 +348,8 @@ class PullDataF(Frame):
         updateGraph(self, "Pull")
 
 def updateGraph(FrameIn, type):
-    global firstColumn, secondColumn, mean1, mean2, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-    global colorDict, paceBorders, pullBorders, paceArea, pullArea, paceBins, pullBins
+    global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
+    global colorDict, paceBorders, pullBorders, paceArea, pullArea
 
     FrameIn.a.clear()
     FrameIn.b.clear()
