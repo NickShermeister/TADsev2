@@ -6,7 +6,7 @@ Team Members: Nathan Lepore, Nicole Scheubert, Nicholas Sherman
 '''
 
 #Import Statements
-from tkinter import Tk, BOTH, Label, TOP, YES, Text, END, Button, font
+from tkinter import Tk, BOTH, Label, TOP, YES, Text, END, Button, font, DISABLED, PhotoImage
 from tkinter.ttk import Frame, Style
 from PIL import Image, ImageTk
 from tkinter.filedialog import askopenfilename
@@ -61,6 +61,7 @@ RED_COLORING = "#FF3300"
 GREEN_COLORING = "#7CFC00"
 YELLOW_COLORING = "yellow"
 colorDict = {0:RED_COLORING, 1:YELLOW_COLORING, 2:GREEN_COLORING, 3:YELLOW_COLORING, 4:RED_COLORING}
+descriptionDict = {0:"significantly below average", 1:"below average", 2:"average", 3:"above average", 4:"significantly above average"}
 
 #Note the boundaries
 paceBorders = [2.0, 2.45, 3.25, 3.95]
@@ -73,22 +74,12 @@ pullArea = -1
 
 #TODO:
 '''
-5) Less whitespace above the Pace/pull over time graphs
-
-7) Maybe more post-processing??
-
-10) More space on pages between things (padding) to balance the empty space
-
-13) Something on the data import page to make it more engaging!!
-12) Text descriptions of graphs
-14) Graph related to time
-
-15) Say what units pace/pull in
-16) Bar underneath highlighting and saying what each color means (red = far from desired goal; yellow = near; green = within target)
-17) Say above/below average pull/pace
-18) Label histogram more based on color
-19) button color (make white?)
-20) In scatterplot, have line connecting everything? (do both; research)
+1) Less whitespace above the Pace/pull over time graphs
+2) Maybe more post-processing??
+3) More space on pages between things (padding) to balance the empty space
+4) Text descriptions of graphs
+5) Graph related to time
+6) Label histogram more based on color
 
 NEEDED:
 1) Comment
@@ -96,22 +87,6 @@ NEEDED:
 BACKBURNER:
 1) Plot showing walk; color code to show how fast? Also color code for pull?
 2) Google Maps API for above?
-'''
-
-#TODONE:
-'''
-1) Make all buttons bigger
-2) Make the coloring of the textbox more readable
-3) Make the text on the basic data information page bigger
-4) Truncate to what the average pace/pull rounds to
-
-6) Turn pace/pull over time to scatterplot over time
-
-8) Make all text bigger sizes
-9) Comment unused buttons
-
-11) Maybe a little larger text boxes and center the text
-
 '''
 
 def DataCalculations():
@@ -202,6 +177,7 @@ class containerClass(Tk):
 
         #Start a container
         container = Frame(self)
+        # container.configure(background="white")
 
         #Try to set the default font button (issues regarding this still)
         DEFAULT_FONT_BUTTON = font.Font(family='Verdana', size=130, weight='bold')
@@ -244,15 +220,25 @@ class DataImportF(Frame):
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)    #Call tkinter's class init.
+        # self.configure(background="white")
 
         #Set up the top label of the page.
         label = Label(self, text="Data Import Page", font=TITLE_FONT)
         label.pack(pady=10,padx=10)
 
+        # img = ImageTk.PhotoImage(Image.open("seeingeye.jpg"))
+        loaded = Image.open("seeingeye.jpg")
+        loaded = loaded.resize((250, 250), Image.ANTIALIAS)
+        rendered = ImageTk.PhotoImage(loaded)
+        img = Label(self, image=rendered)
+        img.image = rendered
+        img.pack()
+
+
         #Set up the buttons that allow the user to import the data they have. Buttons 2/3 we did not have time to implement.
-        button1 = Button(self, text="Imported Pace & Pull Data", command=lambda: controller.requestInfo())
+        button1 = Button(self, text="Imported Pace & Pull Data", bg="white", command=lambda: controller.requestInfo())
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
-        button1.pack(pady=HEIGHT/3)
+        button1.pack()
 
         # button2 = Button(self, text="Imported Only Pace Data (coming soon)")#, command=lambda: controller.show_frame(PageOne))
         # button2.pack()
@@ -274,22 +260,22 @@ class BasicDataF(Frame):
         label.pack(pady=10,padx=10)
 
         #Back button
-        button1 = Button(self, text="Back to Import Page", command=lambda: controller.show_frame(DataImportF))
+        button1 = Button(self, text="Back to Import Page", bg="white", command=lambda: controller.show_frame(DataImportF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack()
 
         #Set up the text class that holds the importan user data
         self.text1 = Text(self, height=32, width=32)
-        self.text1.config(width=46, height=3, font=TEXT_FONT)
+        self.text1.config(width=46, height=10, font=TEXT_FONT)
         self.text1.pack_propagate(0)
         self.text1.pack()
 
         #Set up buttons going to more data pages.
-        button2 = Button(self, text="Go to more pace data", command=lambda: controller.show_frame(PaceDataF))
+        button2 = Button(self, text="Go to more pace data", bg="white", command=lambda: controller.show_frame(PaceDataF))
         button2.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button2.pack()
 
-        button3 = Button(self, text="Go to more pull data", command=lambda: controller.show_frame(PullDataF))
+        button3 = Button(self, text="Go to more pull data", bg="white", command=lambda: controller.show_frame(PullDataF))
         button3.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button3.pack()
 
@@ -300,25 +286,44 @@ class BasicDataF(Frame):
     def update(self):
         #Update the displayed data based on input information.
         global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-        global colorDict, paceBorders, pullBorders, paceArea, pullArea
+        global colorDict, paceBorders, pullBorders, paceArea, pullArea, descriptionDict
+
+        self.text1.config(state="normal")
 
         self.text1.delete('1.0', END)   #Erase old data from textbox
 
         #Input the basic strings
-        paceString = "The average pace of the dog is: %2.2f\n\n" % meanPace
-        pullString = "The average pull of the dog is: %2.2f\n\n" % meanPull
+        paceString = "The average pace of the dog in mph is: %2.2f\n" % meanPace
+        pullString = "The average pull of the dog in lbs is: %2.2f\n\n" % meanPull
         self.text1.insert(END, paceString)
         self.text1.insert(END, pullString)
 
         #Format the text as desired.
-        self.text1.tag_add("paceColor", "1.32", "1.42")
-        self.text1.tag_add("pullColor", "3.32", "3.42")
+        self.text1.tag_add("paceColor", "1.39", "1.49")
+        self.text1.tag_add("pullColor", "2.39", "2.49")
         self.text1.tag_add("Justification", "0.0", "10.100")
         paceColor = colorDict[paceArea]
         pullColor = colorDict[pullArea]
-        self.text1.tag_config("paceColor", background=paceColor, foreground="black")
-        self.text1.tag_config("pullColor", background=pullColor, foreground="black")
+        self.text1.tag_config("paceColor", background=paceColor)
+        self.text1.tag_config("pullColor", background=pullColor)
         self.text1.tag_config("Justification", justify="center")
+
+        paceDescription = "The pace of this dog is %s.\n" % descriptionDict[paceArea]
+        pullDescription = "The pull of this dog is %s.\n\n" % descriptionDict[pullArea]
+        self.text1.insert(END, paceDescription)
+        self.text1.insert(END, pullDescription)
+
+
+        infoString = "Color Coding:\n Far From Average Value\n Near Average Value\n Average Value"
+        self.text1.insert(END, infoString)
+        self.text1.tag_add("colorCode1", "8.1", "8.23")
+        self.text1.tag_add("colorCode2", "9.1", "9.23")
+        self.text1.tag_add("colorCode3", "10.1", "10.23")
+        self.text1.tag_config("colorCode1", background=colorDict[0])
+        self.text1.tag_config("colorCode2", background=colorDict[1])
+        self.text1.tag_config("colorCode3", background=colorDict[2])
+
+        self.text1.config(state=DISABLED)
 
 class PaceDataF(Frame):
     #Frame containing the pace data frame
@@ -332,7 +337,7 @@ class PaceDataF(Frame):
         label.pack(pady=10,padx=10)
 
         #Back button
-        button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
+        button1 = Button(self, text="Back to Basic Data", bg="white", command=lambda: controller.show_frame(BasicDataF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
@@ -361,7 +366,7 @@ class PullDataF(Frame):
         label.pack(pady=10,padx=10)
 
         #Back button
-        button1 = Button(self, text="Back to Basic Data", command=lambda: controller.show_frame(BasicDataF))
+        button1 = Button(self, text="Back to Basic Data", bg="white", command=lambda: controller.show_frame(BasicDataF))
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON)
         button1.pack(pady=20,padx=20)
 
@@ -399,7 +404,9 @@ def updateGraph(FrameIn, type):
     #Set up scatterplot
     title1 = type + " Over Time"
     title2 = "Histogram of " + type + " Distribution"
-    FrameIn.a.scatter(range(0, len(data)), data) #TODO:Change to over time
+    # FrameIn.a.scatter(range(0, len(data)), data) #TODO:Change to over time
+    FrameIn.a.plot( range(0, len(data)), data, linestyle='-', marker='o')
+
     FrameIn.a.set_title(title1)
     FrameIn.a.set(xlabel="Time (s)", ylabel=axisLabel)
 
