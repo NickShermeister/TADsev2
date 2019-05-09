@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 An application created for the Seeing Eye to aid in guide dog pairings
 
@@ -19,7 +20,7 @@ import numpy as np
 import os
 
 #Set the directory path of where we are now. The + "/../.." is to be implemented for executables.
-dir_path = os.path.dirname(os.path.realpath(__file__)) # + "/../.."
+dir_path = os.path.dirname(os.path.realpath(__file__))  + "/../.."
 
 
 #Constant Declarations
