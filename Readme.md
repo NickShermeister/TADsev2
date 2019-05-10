@@ -42,6 +42,17 @@ The hiddenimports should be given a different value so that it includes the new 
 hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
 ```
 
+You will need to copy any .jpgs into the /dist/Final_app directory, as Pyinstaller does not copy images over.
+
+Note: You may need to run the pyinstaller command twice; once to generate the .spec file, and then once on the spec file after you edit it. Your command line should look like this:
+
+```
+pyinstaller Final_app.py
+pyinstaller Final_app.spec
+```
+
+The .spec will create the desired executable application, located at /dist/Final_app/Final_app 
+
 ## Known Issues
 
 Currently, there is limited feedback to the user if something happens. This is a known issue, but not one that there was time to resolve during the course of the semester. If you are trying to upload data, make sure:

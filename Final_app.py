@@ -20,7 +20,7 @@ import numpy as np
 import os
 from matplotlib.patches import Rectangle
 #Set the directory path of where we are now. The + "/../.." is to be implemented for executables.
-dir_path = os.path.dirname(os.path.realpath(__file__)) #  + "/../.."
+dir_path = os.path.dirname(os.path.realpath(__file__))  + "/../.."
 
 
 #Constant Declarations
@@ -176,11 +176,11 @@ def DataCalculations():
     paceDistribution[3] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[3] and valid_nums1.all() >= paceBorders[2] ) ])
     paceDistribution[4] =  len(valid_nums1[ np.where( valid_nums1.all() >= paceBorders[3] ) ])
 
-    print(pullDistribution[0])
-    print(pullBorders[0])
-    print(valid_nums2)
-    print(highBound2)
-    print(lowBound2)
+    # print(pullDistribution[0])
+    # print(pullBorders[0])
+    # print(valid_nums2)
+    # print(highBound2)
+    # print(lowBound2)
     pullDistribution[0] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[0] ) ])
     pullDistribution[1] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[1] and valid_nums2.all() >= pullBorders[0] ) ])
     pullDistribution[2] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[2] and valid_nums2.all() >= pullBorders[1] ) ])
