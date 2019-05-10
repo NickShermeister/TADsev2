@@ -18,9 +18,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg #, NavigationToo
 from matplotlib.figure import Figure
 import numpy as np
 import os
-
+from matplotlib.patches import Rectangle
 #Set the directory path of where we are now. The + "/../.." is to be implemented for executables.
-dir_path = os.path.dirname(os.path.realpath(__file__))  + "/../.."
+dir_path = os.path.dirname(os.path.realpath(__file__)) #  + "/../.."
 
 
 #Constant Declarations
@@ -44,11 +44,14 @@ paceDistribution = [0, 0, 0, 0, 0]  #Saves distribution of pace in the different
 pullDistribution = [0, 0, 0, 0, 0]  #Saves distribution of pull in the different buckets given by the Seeing Eye
 
 paceProcessed = 0   #List of the pace data after being processed
+paceTimes = 0       #Corresponding list of pace times
 pullProcessed = 0   #List of the pull data after being processed
+pullTimes = 0       #List of the pull times
 
 #Name of columns of relevent data.
 firstColumn = "Pace"
 secondColumn = "Pull"
+thirdColumn = "Time"
 
 #Sets the limit of data that is eliminated from the sample set.
 upperPercentile = 95
@@ -73,18 +76,12 @@ paceArea = -1
 pullArea = -1
 
 
-#TODO:
+#TODO (outside of scope of project):
 '''
 1) Less whitespace above the Pace/pull over time graphs
-2) Maybe more post-processing??
-3) More space on pages between things (padding) to balance the empty space
-4) Text descriptions of graphs
-5) Graph related to time
-6) Label histogram more based on color
+2) More space on pages between things (padding) to balance the empty space
+3) Text descriptions of graphs
 
-NEEDED:
-1) Comment
-2) Refactor for readability
 BACKBURNER:
 1) Plot showing walk; color code to show how fast? Also color code for pull?
 2) Google Maps API for above?
@@ -93,11 +90,18 @@ BACKBURNER:
 def DataCalculations():
     #Function that completes all application-backend calculations on the imported data.
     global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-    global paceBorders, pullBorders, paceArea, pullArea
+    global paceBorders, pullBorders, paceArea, pullArea, thirdColumn, paceTimes, pullTimes
 
     #Extract the raw data from the imported data
     rawPace = np.array(dataIn[firstColumn])
     rawPull = np.array(dataIn[secondColumn])
+    rawTimes = np.array(dataIn[thirdColumn])
+    y = rawTimes[0]
+    for x in range(0, len(rawTimes)):
+        rawTimes[x] = (rawTimes[x] - y)/1000 #Account for ms -> s
+
+    for x in range(0, len(rawPull)):
+        rawPull[x] = (rawPull[x])/10 #Eyeballed to convert sensor data to ~pounds
 
     #Get the bounds on the data based on the percentiles
     highBound1 = np.percentile(rawPace, upperPercentile)
@@ -107,21 +111,29 @@ def DataCalculations():
 
     #Holder lists
     valid_nums1 = []
+    valid_times1 = []
     valid_nums2 = []
+    valid_times2 = []
 
     #Add the data to the valid_nums array. To be changed to have a matching time array once implemented.
-    for x in rawPace:
-        if x <= highBound1 and x >= lowBound1:
-            valid_nums1.append(x)
+    for x in range(0, len(rawPace)):
+        if rawPace[x] <= highBound1 and rawPace[x] >= lowBound1:
+            valid_nums1.append(rawPace[x])
+            valid_times1.append(rawTimes[x])
 
 
-    for x in rawPull:
-        if x <= highBound2 and x >= lowBound2:
-            valid_nums2.append(x)
+    for x in range(0, len(rawPull)):
+        if rawPull[x]<= highBound2 and rawPull[x] >= lowBound2:
+            valid_nums2.append(rawPull[x])
+            valid_times2.append(rawTimes[x])
 
     #Cast what ended up being a np array to a list and set it to the global information.
     paceProcessed = list(valid_nums1)
     pullProcessed = list(valid_nums2)
+    paceTimes = valid_times1
+    pullTimes = valid_times2
+    # print(paceTimes)
+    # print(pullTimes)
 
     #Sort the data for more processing.
     valid_nums1.sort()
@@ -287,7 +299,7 @@ class BasicDataF(Frame):
     def update(self):
         #Update the displayed data based on input information.
         global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-        global colorDict, paceBorders, pullBorders, paceArea, pullArea, descriptionDict
+        global colorDict, paceBorders, pullBorders, paceArea, pullArea, descriptionDict, thirdColumn, paceTimes, pullTimes
 
         self.text1.config(state="normal")
 
@@ -386,7 +398,7 @@ class PullDataF(Frame):
 def updateGraph(FrameIn, type):
     #Updates the graphs on the "update" page. Allows for input of "Pace" or "Pull" with the frame being changed to update the correct graph.
     global firstColumn, secondColumn, meanPace, meanPull, upperPercentile, lowerPercentile, paceDistribution, pullDistribution, paceProcessed, pullProcessed
-    global colorDict, paceBorders, pullBorders, paceArea, pullArea
+    global colorDict, paceBorders, pullBorders, paceArea, pullArea, thirdColumn, paceTimes, pullTimes
 
     #Clear old data.
     FrameIn.a.clear()
@@ -397,16 +409,18 @@ def updateGraph(FrameIn, type):
         data = list(paceProcessed)
         borders = paceBorders
         axisLabel = "Speed (mph)"
+        times = paceTimes
     else:
         data = list(pullProcessed)
         borders = pullBorders
         axisLabel = "Force (lbs)"
+        times = pullTimes
 
     #Set up scatterplot
     title1 = type + " Over Time"
     title2 = "Histogram of " + type + " Distribution"
     # FrameIn.a.scatter(range(0, len(data)), data) #TODO:Change to over time
-    FrameIn.a.plot( range(0, len(data)), data, linestyle='-', marker='o')
+    FrameIn.a.plot(times, data, linestyle='-', marker='o')
 
     FrameIn.a.set_title(title1)
     FrameIn.a.set(xlabel="Time (s)", ylabel=axisLabel)
@@ -427,6 +441,9 @@ def updateGraph(FrameIn, type):
             FrameIn.b.patches[i].set_color('r')
     FrameIn.b.set_title(title2)
     FrameIn.b.set(xlabel=axisLabel, ylabel="Number of Measurements")
+    handles = [Rectangle((0,0),1,1,color=c,ec="k") for c in ['r','b','g']]
+    labels = ["Far from Average","Close to Average", "Average"]
+    FrameIn.b.legend(handles, labels)
     FrameIn.canvas.draw()
     FrameIn.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=0)
 
