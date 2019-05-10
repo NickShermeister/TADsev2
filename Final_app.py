@@ -100,8 +100,8 @@ def DataCalculations():
     for x in range(0, len(rawTimes)):
         rawTimes[x] = (rawTimes[x] - y)/1000 #Account for ms -> s
 
-    for x in range(0, len(rawPull)):
-        rawPull[x] = (rawPull[x])/10 #Eyeballed to convert sensor data to ~pounds
+    # for x in range(0, len(rawPull)):
+    #     rawPull[x] = (rawPull[x])/10 #Eyeballed to convert sensor data to ~pounds. Now done in Arduino.
 
     #Get the bounds on the data based on the percentiles
     highBound1 = np.percentile(rawPace, upperPercentile)
@@ -176,6 +176,11 @@ def DataCalculations():
     paceDistribution[3] =  len(valid_nums1[ np.where( valid_nums1.all() < paceBorders[3] and valid_nums1.all() >= paceBorders[2] ) ])
     paceDistribution[4] =  len(valid_nums1[ np.where( valid_nums1.all() >= paceBorders[3] ) ])
 
+    print(pullDistribution[0])
+    print(pullBorders[0])
+    print(valid_nums2)
+    print(highBound2)
+    print(lowBound2)
     pullDistribution[0] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[0] ) ])
     pullDistribution[1] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[1] and valid_nums2.all() >= pullBorders[0] ) ])
     pullDistribution[2] =  len(valid_nums2[ np.where( valid_nums2.all() < pullBorders[2] and valid_nums2.all() >= pullBorders[1] ) ])
@@ -249,7 +254,7 @@ class DataImportF(Frame):
 
 
         #Set up the buttons that allow the user to import the data they have. Buttons 2/3 we did not have time to implement.
-        button1 = Button(self, text="Imported Pace & Pull Data", bg="white", command=lambda: controller.requestInfo())
+        button1 = Button(self, text="Import Pace & Pull Data", bg="white", command=lambda: controller.requestInfo())
         button1.config(width=BUTTON_WIDTH, height=BUTTON_HEIGHT, font=DEFAULT_FONT_BUTTON) #, width = BUTTON_WIDTH)
         button1.pack()
 

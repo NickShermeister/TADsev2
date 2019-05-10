@@ -1,6 +1,21 @@
 # Pace and Pull Software Aid for the Seeing Eye
 
-The entirety of the Python application is contained in "Final_app.py". As this is a Python application, there are executables being made.
+The entirety of the Python application is contained in "Final_app.py". As this is a Python application, there are executables being made for computers that aren't able to run the command
+
+```
+python3 Final_app.py
+```
+
+## Dependencies
+
+The full list of dependencies is:
+* tkinter
+* PIL
+* pandas
+* matplotlib
+* numpy
+
+It is recommended to use Pip3 to install the dependencies.
 
 ## Making Executables
 
@@ -26,3 +41,10 @@ The hiddenimports should be given a different value so that it includes the new 
 ```
 hiddenimports=['PIL', 'PIL._imagingtk', 'PIL._tkinter_finder'],
 ```
+
+## Known Issues
+
+Currently, there is limited feedback to the user if something happens. This is a known issue, but not one that there was time to resolve during the course of the semester. If you are trying to upload data, make sure:
+1. You are trying to import a .csv
+2. Your data has no empty values
+3. You are using the correct distribution of the application for your operating system.
